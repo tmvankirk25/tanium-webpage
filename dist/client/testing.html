@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Canvas Animation with 700 Points</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #f0f0f0;
+        }
+        canvas {
+            border: 1px solid black;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="myCanvas" width="800" height="600"></canvas>
+    <script>
+        const canvas = document.getElementById('myCanvas');
+        const ctx = canvas.getContext('2d');
+        const points = [];
+        const numPoints = 700; // Total number of points
+
+        // Generate 700 points with random positions and movements
+        for (let i = 0; i < numPoints; i++) {
+            points.push({
+                x: Math.random() * canvas.width,
+                y: Math.random() * canvas.height,
+                dx: (Math.random() - 0.5) * 4, // Velocity in x direction
+                dy: (Math.random() - 0.5) * 4, // Velocity in y direction
+                radius: 5 // Radius of each point
+            });
+        }
+
+        function updateAnimation() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear the canvas
+            points.forEach(point => {
+                point.x += point.dx;
+                point.y += point.dy;
+
+                // Reflect off the edges
+                if (point.x <= 0 || point.x >= canvas.width) point.dx *= -1;
+                if (point.y <= 0 || point.y >= canvas.height) point.dy *= -1;
+
+                ctx.beginPath();
+                ctx.arc(point.x, point.y, point.radius, 0, Math.PI * 2);
+                ctx.fillStyle = '#0095DD'; // Blue color for each circle
+                ctx.fill();
+            });
+
+            requestAnimationFrame(updateAnimation);
+        }
+
+        requestAnimationFrame(updateAnimation);
+    </script>
+</body>
+</html>
