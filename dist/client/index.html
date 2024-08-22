@@ -3,9 +3,118 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title></title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.10.4/gsap.min.js"></script>
 </head>
+<style>
+    body{
+        overflow: hidden;
+    }
+</style>
 <body>
+<canvas id="myCanvas"></canvas>
+<button id="animateBtn"  style="
+position: absolute;
+left: 50%;
+bottom: 10%;
+z-index: 10;
+transform: translate(-50%);
+">Animate Points</button>
+
+<script>
+    const canvas = document.getElementById('myCanvas');
+    const ctx = canvas.getContext('2d');
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    // Parameters for the complete radial grid
+    const centerX = canvas.width / 2;
+    const centerY = canvas.height / 2;
+    const maxRadius = 200;  // Maximum radius for the circle
+    const numberOfRings = 18;  // Number of concentric rings
+    let pointsPerRing=5
     
+    function drawPoints() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear the canvas
+    points.forEach(point => {
+        ctx.beginPath();
+        ctx.arc(point.x, point.y, point.size, 0, Math.PI * 2);
+        ctx.fillStyle = `rgb(${point.color.r}, ${point.color.g}, ${point.color.b})`;
+        ctx.fill();
+    });
+}
+
+
+
+
+    let points=[]
+    points.push({
+                x:centerX,
+                y:centerY,
+                size: 2,
+                color: { r: 0, g: 0, b: 255 } // Initial color (blue)
+            })
+    // Loop to create the complete radial grid of points
+    for (let j = 1; j <= numberOfRings; j++) {
+        const radius = (j / numberOfRings) * maxRadius;  // Radius of the current ring
+        const circumference = 2 * Math.PI * radius;
+        const pointSpacing = circumference / pointsPerRing;
+        const pointsInRing = pointsPerRing
+        pointsPerRing+=5
+
+        for (let i = 0; i < pointsInRing; i++) {
+            const angle = (i / pointsInRing) * 2 * Math.PI;  // Calculate the angle for each point
+            const x = centerX + radius * Math.cos(angle);  // X coordinate of the point
+            const y = centerY + radius * Math.sin(angle);  // Y coordinate of the point
+            points.push({
+                x:x,
+                y:y,
+                size: 2,
+                color: { r: 0, g: 0, b: 255 } // Initial color (blue)
+            })
+            //drawPoint(x, y, 2);
+        }
+    }
+
+
+    // Initial draw
+drawPoints();
+
+document.getElementById('animateBtn').addEventListener('click', function() {
+    // Select 10 random points to animate
+    const selectedPoints = [];
+    let index=0
+    for (let i = 0; i < 10; i++) {
+        const index = Math.floor(Math.random() * points.length);
+        selectedPoints.push(points[index]);
+    }
+
+    selectedPoints.forEach(point => {
+        // Animate size to 10 and color to red
+        gsap.to(point, {
+            size: 5, // New size
+            duration: 1,
+            repeat: 1,
+            yoyo:true,
+            yoyoEase: true,
+            ease: "power1.inOut",
+            onUpdate: drawPoints
+        });
+
+        gsap.to(point.color, {
+            r: 255, // Animate color to red
+            g: 0,
+            b: 0,
+            duration: 1,
+            repeat: 1,
+            yoyo:true,
+            yoyoEase: true,
+            ease: "power1.inOut",
+            onUpdate: drawPoints
+        });
+    });
+});
+
+</script>
 </body>
 </html>
