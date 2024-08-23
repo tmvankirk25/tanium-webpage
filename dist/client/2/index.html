@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title></title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.10.4/gsap.min.js"></script>
+</head>
+<style>
+    body{
+       overflow: hidden;
+    }
+    .container{
+        display: flex;
+        align-content: center;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+        height: 100%;
+        width: 100%;
+        position: absolute;
+        top: 0;
+        left: 0;
+    }
+</style>
+<body>
+    <div class="container">
+        <canvas id="myCanvas"></canvas>
+    </div>
+
+
+
+<script>
+    const canvas = document.getElementById('myCanvas');
+    const ctx = canvas.getContext('2d');
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    // Parameters for the complete radial grid
+    const centerX = canvas.width / 2;
+    const centerY = canvas.height / 2;
+    const maxRadius = 207.5;  // Maximum radius for the circle
+    const numberOfRings = 17;  // Number of concentric rings
+    let pointsPerRing=5
+    
+    function drawPoints() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear the canvas
+    ctx.rect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = "#121820";
+     ctx.fill();
+    points.forEach(point => {
+        ctx.beginPath();
+        ctx.arc(point.x, point.y, point.size, 0, Math.PI * 2);
+        ctx.fillStyle = `rgb(${point.color.r}, ${point.color.g}, ${point.color.b})`;
+        // ctx.shadowColor = 'white';
+        // ctx.shadowBlur = 6;
+        // ctx.shadowOffsetX = 0;
+        // ctx.shadowOffsetY = 0;
+        ctx.fill();
+    });
+}
+
+//make colors
+let colors=[]
+function getColorGradient(startColor, endColor, numColors) {
+   ;
+    
+    for (let i = 0; i < numColors; i++) {
+        const ratio = i / (numColors - 1);
+        const r = Math.round(startColor.r + (endColor.r - startColor.r) * ratio);
+        const g = Math.round(startColor.g + (endColor.g - startColor.g) * ratio);
+        const b = Math.round(startColor.b + (endColor.b - startColor.b) * ratio);
+        colors.push({ r, g, b });
+    }
+
+   
+}
+
+// Example usage:
+const lightBlue = {r:230,g:245,b:253};
+const mediumBlue = { r: 3, g: 151, b: 235 };
+const darkBlue = {r:18, g:24, b:32}
+
+
+getColorGradient(lightBlue, mediumBlue, 6);
+colors.pop()
+getColorGradient(mediumBlue,darkBlue,6)
+console.log(colors);
+
+
+    let points=[]
+    points.push({
+                radius:0,
+                ring:0,
+                x:centerX,
+                y:centerY,
+                size: 1.5,
+                color: { r: 3, g: 151, b: 235 } // Initial color (blue)
+            })
+    // Loop to create the complete radial grid of points
+    for (let j = 1; j <= numberOfRings; j++) {
+        const radius = (j / numberOfRings) * maxRadius;  // Radius of the current ring
+        const circumference = 2 * Math.PI * radius;
+        const pointSpacing = circumference / pointsPerRing;
+        const pointsInRing = pointsPerRing
+        pointsPerRing+=5
+
+        for (let i = 0; i < pointsInRing; i++) {
+            const angle = (i / pointsInRing) * 2 * Math.PI;  // Calculate the angle for each point
+            const x = centerX + radius * Math.cos(angle);  // X coordinate of the point
+            const y = centerY + radius * Math.sin(angle);  // Y coordinate of the point
+            let distance = Math.sqrt((x-centerX)**2 +(y-centerY)**2)
+            points.push({
+                angle:angle,
+                radius:radius,
+                ring:j,
+                x:x,
+                y:y,
+                size: 1.5,
+                distance:distance,
+                color: { r: 3, g: 151, b: 235 } // Initial color (blue)
+            })
+            //drawPoint(x, y, 2);
+        }
+    }
+
+
+    // Initial draw
+drawPoints();
+console.log(points)
+
+function handleWheel(event) {
+            if (event.deltaY > 0) {
+                direction=1
+                if(growBool!=true){
+                    animateGrowCircle()
+                }
+               else{
+                animate()
+               }
+               
+            } else if (event.deltaY < 0) {
+                direction=-1
+                if(start==true){
+                    console.log("error")
+                    return
+                }
+                else{
+                    if(growBool==true && count==0){
+                    animateShrinkCircle()
+                }
+                else{
+                    animate()  
+                }
+
+                }
+                
+                
+                
+            }
+        }
+
+
+
+function animatePoints(){
+    // Select 10 random points to animate
+    
+
+    points.forEach(point => {
+        // Animate size to 10 and color to red
+       
+
+        gsap.to(point.color, {
+            r: 255, // Animate color to red
+            g: 255,
+            b: 255,
+            duration: 1,
+            repeat: 1,
+            yoyo:true,
+            yoyoEase: true,
+            ease: "power1.inOut",
+            onUpdate: drawPoints
+        });
+    });
+}
+
+ window.addEventListener('wheel', handleWheel )
+let redIndex=[15, 250+20 ,180+17]
+let startPoints=[15-5,270-5,197-5]
+let redPoints=redIndex.map(index => points[index]);
+let direction=1
+let count=0
+let growBool=false
+let shrinkBool=true
+let start=true
+let end=false
+console.log(redPoints)
+function animate(){
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // Set background color properly
+    ctx.fillStyle = `rgb(${darkBlue.r},${darkBlue.g},${darkBlue.b})`;
+    ctx.fillRect(0, 0, canvas.width, canvas.height); // Fill the entire canvas with the background color
+    
+    
+    for(let i=0; i<points.length;i++){
+        if(redIndex.includes(i)){
+            points[i].color={ r: 236, g: 46, b:48 } 
+            points[i].size=5
+            
+        }
+        else if(startPoints.includes(i-Math.floor(count))){
+            points[i].color=lightBlue
+            ctx.beginPath()
+            ctx.arc(centerX,centerY,points[i-Math.floor(count)].radius,points[i].angle,points[i+1].angle)
+            ctx.lineWidth = 2;
+            ctx.strokeStyle="white"
+            ctx.stroke();
+            points[i].size=5
+        }
+        else{
+            points[i].color={ r: 3, g: 151, b: 235 } 
+            points[i].size=1.5
+        }
+       
+                    
+                    ctx.shadowColor = 'transparent'
+                    ctx.shadowBlur = 0;
+                    ctx.shadowOffsetX = 0;
+                    ctx.shadowOffsetY = 0;
+                    
+
+                
+
+                ctx.beginPath();
+                ctx.arc(points[i].x, points[i].y, points[i].size, 0, Math.PI * 2);
+                ctx.fillStyle = `rgb(${Math.floor(points[i].color.r)}, ${Math.floor(points[i].color.g)}, ${Math.floor(points[i].color.b)})`;
+                ctx.fill();
+    }
+    
+    
+    
+    count+=.5*direction
+
+    if(count>5){
+        count=5
+    }
+    if(count<0){
+        count=0
+        growBool=true
+        shrinkBool=false
+
+    }
+    
+    
+
+
+    
+    
+    //requestAnimationFrame(animate)
+}
+
+function animateGrowCircle(){
+    if(growBool==false){
+        console.log("hjkh")
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // Set background color properly
+    ctx.fillStyle = `rgb(${darkBlue.r},${darkBlue.g},${darkBlue.b})`;
+    ctx.fillRect(0, 0, canvas.width, canvas.height); // Fill the entire canvas with the background color
+    for(let i=0; i<points.length;i++){
+        if(redIndex.includes(i)){
+            points[i].color={ r: 236, g: 46, b:48 } 
+            points[i].size+=.1
+
+                if(points[i].size>5){
+                growBool=true
+                shrinkBool=false
+                start=false
+                console.log("start is now false")
+            }
+            
+            
+        }
+        
+        else{
+            points[i].color={ r: 3, g: 151, b: 235 } 
+            points[i].size=1.5
+        }
+       
+                    
+                    ctx.shadowColor = 'transparent'
+                    ctx.shadowBlur = 0;
+                    ctx.shadowOffsetX = 0;
+                    ctx.shadowOffsetY = 0;
+                    
+
+                
+
+                ctx.beginPath();
+                ctx.arc(points[i].x, points[i].y, points[i].size, 0, Math.PI * 2);
+                ctx.fillStyle = `rgb(${Math.floor(points[i].color.r)}, ${Math.floor(points[i].color.g)}, ${Math.floor(points[i].color.b)})`;
+                ctx.fill();
+    }
+    requestAnimationFrame(animateGrowCircle)
+    }
+    
+    
+}
+
+
+function animateShrinkCircle(){
+    console.log("ghjg")
+    if(shrinkBool==false){
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // Set background color properly
+    ctx.fillStyle = `rgb(${darkBlue.r},${darkBlue.g},${darkBlue.b})`;
+    ctx.fillRect(0, 0, canvas.width, canvas.height); // Fill the entire canvas with the background color
+    for(let i=0; i<points.length;i++){
+        if(redIndex.includes(i)){
+            points[i].color={ r: 3, g: 151, b: 235 } 
+            points[i].size-=.1
+
+                if(points[i].size<1.5){
+                growBool=false
+                shrinkBool=true
+                start=true
+                console.log("start is now true")
+            }
+            
+            
+        }
+        
+        else{
+            points[i].color={ r: 3, g: 151, b: 235 } 
+            points[i].size=1.5
+        }
+       
+                    
+                    ctx.shadowColor = 'transparent'
+                    ctx.shadowBlur = 0;
+                    ctx.shadowOffsetX = 0;
+                    ctx.shadowOffsetY = 0;
+                    
+
+                
+
+                ctx.beginPath();
+                ctx.arc(points[i].x, points[i].y, points[i].size, 0, Math.PI * 2);
+                ctx.fillStyle = `rgb(${Math.floor(points[i].color.r)}, ${Math.floor(points[i].color.g)}, ${Math.floor(points[i].color.b)})`;
+                ctx.fill();
+    }
+    requestAnimationFrame(animateShrinkCircle)
+    }
+
+}
+
+//animate()
+
+
+</script>
+</body>
+</html>
