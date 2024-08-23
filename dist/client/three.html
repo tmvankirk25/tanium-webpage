@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script type="importmap">
+        {
+          "imports": {
+            "three": "https://unpkg.com/three/build/three.module.js",
+            "three/addons/": "https://unpkg.com/three/examples/jsm/"
+          }
+        }
+      </script>
+</head>
+<body>
+    
+</body>
+<script type="module">
+    import * as THREE from 'three';
+
+const scene = new THREE.Scene();
+const aspectRatio = window.innerWidth / window.innerHeight;
+const camera = new THREE.OrthographicCamera(
+    -aspectRatio * 10,  // left
+    aspectRatio * 10,   // right
+    10,                 // top
+    -10,                // bottom
+    0.1,                // near
+    1000                // far
+);
+
+const renderer = new THREE.WebGLRenderer();
+renderer.setSize( window.innerWidth, window.innerHeight );
+document.body.appendChild( renderer.domElement );
+
+const geometry = new THREE.BoxGeometry( 1, 1, 1 );
+const material = new THREE.MeshBasicMaterial( { color: 0x00ff00 } );
+const cube = new THREE.Mesh( geometry, material );
+const light = new THREE.DirectionalLight( 0xffffff, 0.5 )
+scene.add( cube );
+scene.add(light)
+camera.position.z = 5;
+
+function animate() {
+	cube.rotation.x += 0.01;
+	cube.rotation.y += 0.01;
+
+	renderer.render( scene, camera );
+	requestAnimationFrame(animate)
+}
+
+animate()
+</script>
+</html>
