@@ -280,6 +280,17 @@ function animateGrowCircle(){
             
             
         }
+
+        else if(startPoints.includes(i)){
+            points[i].color=lightBlue
+            points[i].size+=.1
+            if(points[i].size>5){
+                growBool=true
+                shrinkBool=false
+                start=false
+                console.log("start is now false")
+            }
+        }
         
         else{
             points[i].color={ r: 3, g: 151, b: 235 } 
@@ -328,6 +339,17 @@ function animateShrinkCircle(){
             }
             
             
+        }
+
+        else if(startPoints.includes(i)){
+            points[i].color={ r: 3, g: 151, b: 235 } 
+            points[i].size-=.1
+            if(points[i].size<1.5){
+                growBool=false
+                shrinkBool=true
+                start=true
+                console.log("start is now true")
+            }
         }
         
         else{
