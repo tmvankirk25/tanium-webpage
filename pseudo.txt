@@ -1,0 +1,58 @@
+<!-- <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <div class="container">
+        <h1 class="text-animate right">Autonomus</h1>
+        <h1 class="text-animate left">Endpoint</h1>
+        <h1 class="text-animate left">Management</h1>
+    </div>
+    <div class="video">
+        <div text-overlay>
+            <h2>The next evolution of...</h2>
+            <h2>Providing the power...</h2>
+        </div>
+    </div>
+    <canvas id="large-circle"></canvas>
+        <img src="taniumlogo.png">
+        <h2>Autonomus Endpoint Management</h2>
+        <p>leverages the real-time...</p>
+    <div id="canvas-container">
+        <canvas id="dots1"></canvas>
+        <div class="text-cont">
+            <h2>Real-time cloud intelligence</h2>
+            <p>AEM can analyze...</p>
+        </div>
+    </div>
+    <div id="canvas-container">
+        <canvas id="dots1"></canvas>
+        <div class="text-cont">
+            <h2>Real-time cloud intelligence</h2>
+            <p>AEM can analyze...</p>
+        </div>
+    </div>
+    <div id="canvas-container">
+        <canvas id="dots2"></canvas>
+        <div class="text-cont">
+            <h2>Automation and orchestration</h2>
+            <p>Every aspect of the Tanium...</p>
+        </div>
+    </div>
+    <div id="canvas-container">
+        <canvas id="dots3"></canvas>
+        <div class="text-cont">
+            <h2>Deployment templates and rings</h2>
+            <p>Deployment templates provide...</p>
+        </div>
+    </div>
+    <canvas id="circle-perspective"></canvas>
+        <h2>The operator is always...</h2>
+    
+    <script src="super-awesome-script.js"></script>
+    <script src="super-awesome-script2.js"></script>
+</body>
+</html> -->
