@@ -24,7 +24,7 @@
     }
 </style>
 <body>
-    <div class="container">
+    <div  style="display: flex; align-content: center; align-items: center; justify-content: center; flex-direction: column; height: 100%; width:100%; position: absolute; top: 0; left:0;">
         <canvas id="myCanvas"></canvas>
     </div>
 
@@ -140,28 +140,7 @@ function handleWheel(event) {
 
 
 
-function animatePoints(){
-    console.log("rfgreg")
-    // Select 10 random points to animate
-    
 
-    points.forEach(point => {
-        // Animate size to 10 and color to red
-       
-
-        gsap.to(point.color, {
-            r: 255, // Animate color to red
-            g: 255,
-            b: 255,
-            duration: 1,
-            repeat: 1,
-            yoyo:true,
-            yoyoEase: true,
-            ease: "power1.inOut",
-            onUpdate: drawPoints
-        });
-    });
-}
 
  //window.addEventListener('wheel', handleWheel )
 
