@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bouncing Dot with WebGL and Blur</title>
+  <style>
+    body, html {
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+    }
+    canvas {
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="glCanvas"></canvas>
+
+  <script>
+    // WebGL and JavaScript code with blur effect
+
+    const canvas = document.getElementById('glCanvas');
+    const gl = canvas.getContext('webgl');
+
+    // Resize canvas to fit the window
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    gl.viewport(0, 0, canvas.width, canvas.height);
+    gl.clearColor(0.0, 0.0, 0.0, 1.0);
+
+    // Vertex shader program
+    const vsSource = `
+      attribute vec4 aVertexPosition;
+      void main(void) {
+        gl_Position = aVertexPosition;
+      }
+    `;
+
+    // Fragment shader with blur effect
+    const fsSource = `
+      precision mediump float;
+      uniform vec2 u_resolution;
+      uniform vec2 u_position;
+      uniform float u_radius;
+
+      // Gaussian blur weights and offsets
+      float gaussian(float x, float sigma) {
+        return exp(-(x * x) / (2.0 * sigma * sigma)) / (2.0 * 3.14159 * sigma * sigma);
+      }
+
+      void main(void) {
+        vec2 st = gl_FragCoord.xy / u_resolution;
+        vec2 center = u_position / u_resolution;
+        float dist = distance(st, center);
+        float blurRadius = u_radius / u_resolution.x;
+
+        // Apply Gaussian blur effect based on distance from center
+        float blurStrength = 0.0;
+        float sigma = 0.02; // Controls blur amount
+        float intensity = 0.0;
+
+        // Sum weighted samples
+        for (float i = -10.0; i <= 10.0; i++) {
+          float weight = gaussian(i, sigma);
+          blurStrength += weight;
+          intensity += weight * smoothstep(blurRadius - 0.01, blurRadius, dist + i * 0.005);
+        }
+
+        intensity /= blurStrength;
+
+        // Red color with blur
+        gl_FragColor = vec4(1.0, 0.0, 0.0, intensity);
+      }
+    `;
+
+    // Create shader
+    function createShader(gl, type, source) {
+      const shader = gl.createShader(type);
+      gl.shaderSource(shader, source);
+      gl.compileShader(shader);
+      if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+        console.error('An error occurred compiling the shaders:', gl.getShaderInfoLog(shader));
+        gl.deleteShader(shader);
+        return null;
+      }
+      return shader;
+    }
+
+    // Create WebGL program
+    function createProgram(gl, vsSource, fsSource) {
+      const vertexShader = createShader(gl, gl.VERTEX_SHADER, vsSource);
+      const fragmentShader = createShader(gl, gl.FRAGMENT_SHADER, fsSource);
+      const program = gl.createProgram();
+      gl.attachShader(program, vertexShader);
+      gl.attachShader(program, fragmentShader);
+      gl.linkProgram(program);
+      if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+        console.error('Unable to initialize the shader program:', gl.getProgramInfoLog(program));
+        return null;
+      }
+      return program;
+    }
+
+    const shaderProgram = createProgram(gl, vsSource, fsSource);
+    gl.useProgram(shaderProgram);
+
+    // Position buffer (square vertices)
+    const positionBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+
+    // A square made of two triangles
+    const squareVertices = [
+       -1.0,  1.0,
+        1.0,  1.0,
+       -1.0, -1.0,
+        1.0, -1.0,
+    ];
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(squareVertices), gl.STATIC_DRAW);
+
+    const vertexPosition = gl.getAttribLocation(shaderProgram, 'aVertexPosition');
+    gl.enableVertexAttribArray(vertexPosition);
+    gl.vertexAttribPointer(vertexPosition, 2, gl.FLOAT, false, 0, 0);
+
+    // Get uniform locations
+    const resolutionLocation = gl.getUniformLocation(shaderProgram, 'u_resolution');
+    const positionLocation = gl.getUniformLocation(shaderProgram, 'u_position');
+    const radiusLocation = gl.getUniformLocation(shaderProgram, 'u_radius');
+
+    // Set up initial position and velocity for the dot
+    let dotX = Math.random() * canvas.width;
+    let dotY = Math.random() * canvas.height;
+    const radius = 40; // Dot radius (also used for blur size)
+    let speedX = (Math.random() * 2) + 1; // Horizontal speed
+    let speedY = (Math.random() * 2) + 1; // Vertical speed
+
+    // Function to calculate velocity magnitude
+    function getVelocity() {
+      return Math.sqrt(speedX * speedX + speedY * speedY);
+    }
+
+    // Function to set a new direction while maintaining speed
+    function setNewDirection() {
+      const velocity = getVelocity(); // Keep the same velocity magnitude
+      const angle = Math.random() * 2 * Math.PI; // Random angle between 0 and 360 degrees
+
+      // Adjust speedX and speedY to the new direction based on the angle
+      speedX = velocity * Math.cos(angle);
+      speedY = velocity * Math.sin(angle);
+    }
+
+    // Animation loop
+    function animate() {
+      gl.clear(gl.COLOR_BUFFER_BIT);
+
+      // Update dot position
+      dotX += speedX;
+      dotY += speedY;
+
+      // Check for collision with left or right walls
+      if (dotX + radius > canvas.width || dotX - radius < 0) {
+        setNewDirection();
+        if (dotX - radius < 0) dotX = radius;
+        if (dotX + radius > canvas.width) dotX = canvas.width - radius;
+      }
+
+      // Check for collision with top or bottom walls
+      if (dotY + radius > canvas.height || dotY - radius < 0) {
+        setNewDirection();
+        if (dotY - radius < 0) dotY = radius;
+        if (dotY + radius > canvas.height) dotY = canvas.height - radius;
+      }
+
+      // Send resolution and position to shader
+      gl.uniform2f(resolutionLocation, canvas.width, canvas.height);
+      gl.uniform2f(positionLocation, dotX, dotY);
+      gl.uniform1f(radiusLocation, radius);
+
+      // Draw the square (representing the blurred dot)
+      gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+
+      // Request next frame
+      requestAnimationFrame(animate);
+    }
+
+    // Start the animation
+    animate();
+
+    // Resize canvas and WebGL viewport on window resize
+    window.addEventListener('resize', () => {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      gl.viewport(0, 0, canvas.width, canvas.height);
+    });
+  </script>
+</body>
+</html>
